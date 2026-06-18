@@ -34,17 +34,17 @@ const MANUAL_CERTIFICATE_REGISTRY = {
   'BMAJUNVEMES/Q1401S017': { name: 'Lokesh S', courseName: 'Video Editing', courseSlug: 'video-editing' },
   'BMAJUNVEMES/Q1401S018': { name: 'Shalini.K', courseName: 'Video Editing', courseSlug: 'video-editing' },
   'BMAJUNVEMES/Q1401S024': { name: 'Deenadhayalan K', courseName: 'Video Editing', courseSlug: 'video-editing' },
-  'BMAJUNDMMES/Q0506S082': { name: 'Jeya shree', courseName: 'Digital Marketing', courseSlug: 'digital-marketing' },
-  'BMAJUNDMMES/Q0506S083': { name: 'SAI ANAND.P', courseName: 'Digital Marketing', courseSlug: 'digital-marketing' },
-  'BMAJUNDMMES/Q0506S084': { name: 'Preethishankar', courseName: 'Digital Marketing', courseSlug: 'digital-marketing' },
-  'BMAJUNDMMES/Q0506S085': { name: 'Hariharan Sathianathan', courseName: 'Digital Marketing', courseSlug: 'digital-marketing' },
-  'BMAJUNDMMES/Q0506S086': { name: 'Rajasri', courseName: 'Digital Marketing', courseSlug: 'digital-marketing' },
-  'BMAJUNDMMES/Q0506S087': { name: 'S. Deepa', courseName: 'Digital Marketing', courseSlug: 'digital-marketing' },
-  'BMAJUNDMMES/Q0506S088': { name: 'Nisha S', courseName: 'Digital Marketing', courseSlug: 'digital-marketing' },
-  'BMAJUNDMMES/Q0506S089': { name: 'sureka', courseName: 'Digital Marketing', courseSlug: 'digital-marketing' },
-  'BMAJUNDMMES/Q0506S090': { name: 'Thulasi dass. B', courseName: 'Digital Marketing', courseSlug: 'digital-marketing' },
-  'BMAJUNVEMES/Q1401S025': { name: 'POUL BLESSON . A', courseName: 'Video Editing', courseSlug: 'video-editing' },
-  'BMAJUNVEMES/Q1401S026': { name: 'M.Sham Kumar', courseName: 'Video Editing', courseSlug: 'video-editing' }
+  'BMAJUNDMMES/Q0506S092': { name: 'Jeya shree', courseName: 'Digital Marketing', courseSlug: 'digital-marketing' },
+  'BMAJUNDMMES/Q0506S093': { name: 'SAI ANAND.P', courseName: 'Digital Marketing', courseSlug: 'digital-marketing' },
+  'BMAJUNDMMES/Q0506S094': { name: 'Preethishankar', courseName: 'Digital Marketing', courseSlug: 'digital-marketing' },
+  'BMAJUNDMMES/Q0506S095': { name: 'Hariharan Sathianathan', courseName: 'Digital Marketing', courseSlug: 'digital-marketing' },
+  'BMAJUNDMMES/Q0506S096': { name: 'Rajasri', courseName: 'Digital Marketing', courseSlug: 'digital-marketing' },
+  'BMAJUNDMMES/Q0506S097': { name: 'S. Deepa', courseName: 'Digital Marketing', courseSlug: 'digital-marketing' },
+  'BMAJUNDMMES/Q0506S098': { name: 'Nisha S', courseName: 'Digital Marketing', courseSlug: 'digital-marketing' },
+  'BMAJUNDMMES/Q0506S099': { name: 'sureka', courseName: 'Digital Marketing', courseSlug: 'digital-marketing' },
+  'BMAJUNDMMES/Q0506S100': { name: 'Thulasi dass. B', courseName: 'Digital Marketing', courseSlug: 'digital-marketing' },
+  'BMAJUNVEMES/Q1401S027': { name: 'POUL BLESSON . A', courseName: 'Video Editing', courseSlug: 'video-editing' },
+  'BMAJUNVEMES/Q1401S028': { name: 'M.Sham Kumar', courseName: 'Video Editing', courseSlug: 'video-editing' }
 };
 
 const findCourseStudentForCertificate = async (rawId, decodedId) => {
