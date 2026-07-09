@@ -323,8 +323,18 @@ router.post('/', async (req, res) => {
 
   try {
     // Generate certificate ID
+    const prefixMap = {
+      'video-editing': 'BMAVE',
+      'digital-marketing': 'BMADM',
+      'web-development': 'BMAWD',
+      'graphic-design': 'BMAGD',
+      'social-media': 'BMASMS',
+      'data-analytics': 'BMADA',
+      'artificial-intelligence': 'BMAAI',
+      'ui-ux': 'BMAUI'
+    };
     const count = await CourseStudent.countDocuments({ courseSlug });
-    const prefix = courseSlug === 'video-editing' ? 'BMAVE' : 'BMADM';
+    const prefix = prefixMap[courseSlug] || 'BMA' + courseSlug.substring(0, 3).toUpperCase();
     const certificateId = `${prefix}${(count + 1).toString().padStart(4, '0')}`;
 
     const student = new CourseStudent({

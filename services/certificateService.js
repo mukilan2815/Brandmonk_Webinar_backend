@@ -13,7 +13,10 @@ class CertificateService {
         'digital-marketing': 'BMADM',
         'web-development': 'BMAWD',
         'graphic-design': 'BMAGD',
-        'social-media': 'BMASMS'
+        'social-media': 'BMASMS',
+        'data-analytics': 'BMADA',
+        'artificial-intelligence': 'BMAAI',
+        'ui-ux': 'BMAUI'
       };
 
       const prefix = prefixMap[courseSlug] || 'BMA' + courseSlug.substring(0, 3).toUpperCase();
