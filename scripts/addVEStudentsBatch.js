@@ -208,7 +208,6 @@ async function addStudents() {
         await newStudent.save();
         console.log(`✅ Added: ${name} → ${certificateId}`);
         added++;
-        existingNames.add(normalizedName);
         existingCertIds.add(certificateId);
         nextNum++;
       } catch (error) {
