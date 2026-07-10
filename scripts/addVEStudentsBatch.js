@@ -161,7 +161,6 @@ async function addStudents() {
 
     const existingStudents = await CourseStudent.find({ courseSlug: COURSE_SLUG });
     const existingCertIds = new Set(existingStudents.map(s => s.certificateId));
-    const existingNames = new Set(existingStudents.map(s => normalizeName(s.name)));
 
     // Find the highest existing BMAJUNVEMES/Q1401S certificate number
     let maxNum = 0;
@@ -185,15 +184,6 @@ async function addStudents() {
     const failedList = [];
 
     for (const name of newStudentNames) {
-      const normalizedName = normalizeName(name);
-
-      // Skip if name already exists in Video Editing course
-      if (existingNames.has(normalizedName)) {
-        console.log(`⏭️  Skipped (name exists): ${name}`);
-        skipped++;
-        continue;
-      }
-
       const certificateId = `${CERT_PREFIX}${nextNum.toString().padStart(3, '0')}`;
 
       // Safety check: skip if cert ID somehow already exists
