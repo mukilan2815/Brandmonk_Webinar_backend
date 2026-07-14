@@ -62,7 +62,7 @@ const veStudents = [
   { name: 'Gokul S' },
   { name: 'Surya K' },
   { name: 'Kaleeswari' },
-  { name: 'Santhosh PM' },
+  { name: 'Santhosh' },
   { name: 'Vijaya Ananth VS' },
   { name: 'R K Ramanan' },
   { name: 'Ramsingh' },

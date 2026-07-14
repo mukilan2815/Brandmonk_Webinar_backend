@@ -51,7 +51,7 @@ class CertificateService {
   }
 
   // Create or update a course student with certificate
-  static async createCourseStudent(studentData) {
+  static async createCourseStudent(studentData, allowDuplicate = false) {
     const {
       name,
       courseName,
@@ -67,20 +67,22 @@ class CertificateService {
     }
 
     try {
-      // Check if student already exists
-      const existingStudent = await CourseStudent.findOne({
-        name: name.trim(),
-        courseSlug: courseSlug.trim()
-      });
+      // Check if student already exists (skipped for bulk duplicates with unique certificate IDs)
+      if (!allowDuplicate) {
+        const existingStudent = await CourseStudent.findOne({
+          name: name.trim(),
+          courseSlug: courseSlug.trim()
+        });
 
-      if (existingStudent) {
-        console.log(`Student ${name} already exists in ${courseSlug}`);
-        return {
-          success: false,
-          message: 'Student already exists',
-          student: existingStudent,
-          isNew: false
-        };
+        if (existingStudent) {
+          console.log(`Student ${name} already exists in ${courseSlug}`);
+          return {
+            success: false,
+            message: 'Student already exists',
+            student: existingStudent,
+            isNew: false
+          };
+        }
       }
 
       // Generate certificate ID
@@ -124,7 +126,7 @@ class CertificateService {
 
     for (const studentData of studentsData) {
       try {
-        const result = await this.createCourseStudent(studentData);
+        const result = await this.createCourseStudent(studentData, true);
 
         if (result.isNew) {
           results.success.push({
