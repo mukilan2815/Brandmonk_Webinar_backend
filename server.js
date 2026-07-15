@@ -7,6 +7,7 @@ const studentRoutes = require('./routes/studentRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const webinarRoutes = require('./routes/webinarRoutes');
 const courseStudentRoutes = require('./routes/courseStudentRoutes');
+const verifyStudentRoutes = require('./routes/verifyStudentRoutes');
 
 // Load environment variables
 dotenv.config();
@@ -51,6 +52,7 @@ app.use('/api/students', studentRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/webinars', webinarRoutes);
 app.use('/api/course-students', courseStudentRoutes);
+app.use('/api/verify-student', verifyStudentRoutes);
 
 
 
