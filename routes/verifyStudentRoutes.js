@@ -8,7 +8,7 @@ const StudentVerification = require('../models/StudentVerification');
 // @access  Public
 router.post('/', async (req, res) => {
   try {
-    const { mobile } = req.body;
+    const { name, email, mobile } = req.body;
 
     if (!mobile || !mobile.trim()) {
       return res.status(400).json({
@@ -36,6 +36,22 @@ router.post('/', async (req, res) => {
       });
     }
 
+    // Verify name matches (case-insensitive)
+    if (name && name.trim() && student.name.toLowerCase().trim() !== name.toLowerCase().trim()) {
+      return res.status(404).json({
+        success: false,
+        message: 'The name does not match our records for this mobile number'
+      });
+    }
+
+    // Verify email matches (case-insensitive)
+    if (email && email.trim() && student.email && student.email.toLowerCase().trim() !== email.toLowerCase().trim()) {
+      return res.status(404).json({
+        success: false,
+        message: 'The email does not match our records for this mobile number'
+      });
+    }
+
     // Save verification entry
     await StudentVerification.create({
       name: student.name,
@@ -49,6 +65,7 @@ router.post('/', async (req, res) => {
       success: true,
       student: {
         name: student.name,
+        email: student.email || '',
         mobile: cleanMobile,
         courseName: student.courseName,
         certificateId: student.certificateId
