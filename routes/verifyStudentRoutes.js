@@ -3,12 +3,19 @@ const router = express.Router();
 const CourseStudent = require('../models/CourseStudent');
 const StudentVerification = require('../models/StudentVerification');
 
-// @desc    Verify student by mobile number
+// @desc    Store student form submission
 // @route   POST /api/verify-student
 // @access  Public
 router.post('/', async (req, res) => {
   try {
     const { name, email, mobile } = req.body;
+
+    if (!name || !name.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Name is required'
+      });
+    }
 
     if (!mobile || !mobile.trim()) {
       return res.status(400).json({
@@ -26,56 +33,45 @@ router.post('/', async (req, res) => {
       });
     }
 
-    // Search for student by phone number across all courses
+    // Optionally check if student exists in CourseStudent to grab real course details
     const student = await CourseStudent.findOne({ phoneNumber: cleanMobile });
 
-    if (!student) {
-      return res.status(404).json({
-        success: false,
-        message: 'No student found with this mobile number'
-      });
+    let courseName = '24th Graduation Function';
+    let courseSlug = 'graduation-function';
+    let certificateId = `BMA-GRAD-${Math.floor(100000 + Math.random() * 900000)}`;
+
+    if (student) {
+      courseName = student.courseName || courseName;
+      courseSlug = student.courseSlug || courseSlug;
+      certificateId = student.certificateId || certificateId;
     }
 
-    // Verify name matches (case-insensitive)
-    if (name && name.trim() && student.name.toLowerCase().trim() !== name.toLowerCase().trim()) {
-      return res.status(404).json({
-        success: false,
-        message: 'The name does not match our records for this mobile number'
-      });
-    }
-
-    // Verify email matches (case-insensitive)
-    if (email && email.trim() && student.email && student.email.toLowerCase().trim() !== email.toLowerCase().trim()) {
-      return res.status(404).json({
-        success: false,
-        message: 'The email does not match our records for this mobile number'
-      });
-    }
-
-    // Save verification entry
-    await StudentVerification.create({
-      name: student.name,
+    // Store the submission
+    const entry = await StudentVerification.create({
+      name: name.trim(),
+      email: (email || '').trim().toLowerCase(),
       mobile: cleanMobile,
-      courseName: student.courseName,
-      courseSlug: student.courseSlug,
-      certificateId: student.certificateId
+      courseName,
+      courseSlug,
+      certificateId
     });
 
     res.json({
       success: true,
       student: {
-        name: student.name,
-        email: student.email || '',
+        name: name.trim(),
+        email: (email || '').trim(),
         mobile: cleanMobile,
-        courseName: student.courseName,
-        certificateId: student.certificateId
+        courseName,
+        courseSlug,
+        certificateId
       }
     });
   } catch (error) {
     console.error('VerifyStudent Error:', error);
     res.status(500).json({
       success: false,
-      message: 'Server error while verifying student'
+      message: 'Server error while saving student data'
     });
   }
 });
@@ -87,7 +83,7 @@ router.get('/entries', async (req, res) => {
   try {
     const entries = await StudentVerification.find({})
       .sort({ createdAt: -1 })
-      .select('name mobile courseName courseSlug certificateId createdAt');
+      .select('name email mobile courseName courseSlug certificateId createdAt');
 
     res.json({
       success: true,

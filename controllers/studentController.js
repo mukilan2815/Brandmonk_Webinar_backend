@@ -1,5 +1,6 @@
 const Student = require('../models/Student');
 const Webinar = require('../models/Webinar');
+const { sendWelcomeEmail } = require('../services/emailService');
 
 // Generate certificate ID
 
@@ -9,23 +10,23 @@ const Webinar = require('../models/Webinar');
 // @access  Public
 const registerStudent = async (req, res) => {
   console.log("Register Request:", req.body);
-  const { 
-    name, 
-    email, 
-    phone, 
-    webinarSlug, 
-    location, 
+  const {
+    name,
+    email,
+    phone,
+    webinarSlug,
+    location,
     profession,
     collegeOrCompany,
     department,
-    yearOfStudyOrExperience 
+    yearOfStudyOrExperience
   } = req.body;
 
   // Validate required fields
   if (!name || !email || !phone || !webinarSlug || !location || !profession) {
-    return res.status(400).json({ 
-      success: false, 
-      message: 'All fields are required' 
+    return res.status(400).json({
+      success: false,
+      message: 'All fields are required'
     });
   }
 
@@ -43,14 +44,14 @@ const registerStudent = async (req, res) => {
     // Generate Certificate ID manually
     console.log("Generating Certificate ID for registration...");
     let certificateId = '';
-    
+
     // Find the highest certificate ID by fetching all matching IDs and finding max in JS
     // (MongoDB aggregation $toInt fails on large numbers that overflow 32-bit int)
     const allCertIds = await Student.find(
       { certificateId: { $regex: /^SMAPARMQ076\d+$/ } },
       { certificateId: 1 }
     ).lean();
-    
+
     let nextNum = 1;
     if (allCertIds.length > 0) {
       let maxNum = 0;
@@ -63,18 +64,18 @@ const registerStudent = async (req, res) => {
       }
       nextNum = maxNum + 1;
     }
-    
+
     console.log("Next Certificate Number:", nextNum);
 
     // Ensure uniqueness by checking if the ID exists and incrementing
     let isUnique = false;
     let attempts = 0;
-    
+
     // High retry limit for concurrent registrations
     while (!isUnique && attempts < 200) {
       const potentialId = `SMAPARMQ076${nextNum.toString().padStart(3, '0')}`;
       const existing = await Student.findOne({ certificateId: potentialId });
-      
+
       if (!existing) {
         certificateId = potentialId;
         isUnique = true;
@@ -88,7 +89,7 @@ const registerStudent = async (req, res) => {
     if (!isUnique) {
       throw new Error('Unable to generate unique Certificate ID');
     }
-    
+
     const studentData = {
       name: name.trim(),
       email: email.trim().toLowerCase(),
@@ -112,13 +113,17 @@ const registerStudent = async (req, res) => {
       ...studentData,
     });
     const savedStudent = await student.save();
-    
+
     // Update webinar count
     await Webinar.findByIdAndUpdate(webinar._id, {
       $inc: { totalRegistrations: 1 }
     });
-    
+
     console.log("Student Registered:", savedStudent._id);
+
+    // Send welcome email asynchronously in background
+    sendWelcomeEmail(savedStudent.name, savedStudent.email, savedStudent.webinarName)
+      .catch(err => console.error("Async Email Error:", err));
 
     res.status(201).json({
       success: true,
@@ -133,8 +138,8 @@ const registerStudent = async (req, res) => {
     });
   } catch (error) {
     console.error("Register Student Error:", error);
-    res.status(500).json({ 
-      success: false, 
+    res.status(500).json({
+      success: false,
       message: 'Registration failed. Please try again.',
       error: error.message
     });
@@ -150,7 +155,7 @@ const verifyStudentEmail = async (req, res) => {
 
   try {
     let student = null;
-    
+
     if (email) {
       student = await Student.findOne({ email: email.trim().toLowerCase() });
     } else if (certificateId) {
@@ -171,16 +176,16 @@ const verifyStudentEmail = async (req, res) => {
         }
       });
     } else {
-      res.status(404).json({ 
-        success: false, 
-        message: 'No registration found with this email. Please register first.' 
+      res.status(404).json({
+        success: false,
+        message: 'No registration found with this email. Please register first.'
       });
     }
   } catch (error) {
     console.error("Verify Student Error:", error);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Verification failed. Please try again.' 
+    res.status(500).json({
+      success: false,
+      message: 'Verification failed. Please try again.'
     });
   }
 };
@@ -211,16 +216,16 @@ const markInstagramFollowed = async (req, res) => {
         }
       });
     } else {
-      res.status(404).json({ 
-        success: false, 
-        message: 'Student not found.' 
+      res.status(404).json({
+        success: false,
+        message: 'Student not found.'
       });
     }
   } catch (error) {
     console.error("Instagram Verify Error:", error);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Verification failed. Please try again.' 
+    res.status(500).json({
+      success: false,
+      message: 'Verification failed. Please try again.'
     });
   }
 };
@@ -234,7 +239,7 @@ const getStudentById = async (req, res) => {
   try {
     let student;
     let source = 'webinar'; // 'webinar' (Student) or 'course' (CourseStudent)
-    
+
     // 1. Try finding by certificateId in Student model (Webinars)
     student = await Student.findOne({ certificateId: paramId });
 
@@ -248,24 +253,24 @@ const getStudentById = async (req, res) => {
 
     // 3. If not found, and it looks like a Mongo ID, try both
     if (!student && paramId.match(/^[0-9a-fA-F]{24}$/)) {
-        student = await Student.findById(paramId);
-        if (!student) {
-           const CourseStudent = require('../models/CourseStudent');
-           student = await CourseStudent.findById(paramId);
-           if (student) source = 'course';
-        } else {
-           source = 'webinar';
-        }
+      student = await Student.findById(paramId);
+      if (!student) {
+        const CourseStudent = require('../models/CourseStudent');
+        student = await CourseStudent.findById(paramId);
+        if (student) source = 'course';
+      } else {
+        source = 'webinar';
+      }
     }
 
     if (student) {
       // Normalize data for frontend
       const responseData = {
-          _id: student._id,
-          name: student.name,
-          certificateId: student.certificateId,
-          dateOfRegistration: student.dateOfRegistration || student.createdAt,
-          isEligible: student.isEligible || false
+        _id: student._id,
+        name: student.name,
+        certificateId: student.certificateId,
+        dateOfRegistration: student.dateOfRegistration || student.createdAt,
+        isEligible: student.isEligible || false
       };
 
       if (source === 'webinar') {
@@ -288,23 +293,23 @@ const getStudentById = async (req, res) => {
         student: responseData
       });
     } else {
-      res.status(404).json({ 
-        success: false, 
-        message: 'Certificate not found.' 
+      res.status(404).json({
+        success: false,
+        message: 'Certificate not found.'
       });
     }
   } catch (error) {
     console.error("GetStudentById Error:", error);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Server Error' 
+    res.status(500).json({
+      success: false,
+      message: 'Server Error'
     });
   }
 };
 
-module.exports = { 
-  registerStudent, 
-  verifyStudentEmail, 
+module.exports = {
+  registerStudent,
+  verifyStudentEmail,
   markInstagramFollowed,
-  getStudentById 
+  getStudentById
 };

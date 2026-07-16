@@ -2,15 +2,16 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const dotenv = require('dotenv');
+
+// Load environment variables immediately
+dotenv.config();
+
 const connectDB = require('./config/db');
 const studentRoutes = require('./routes/studentRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const webinarRoutes = require('./routes/webinarRoutes');
 const courseStudentRoutes = require('./routes/courseStudentRoutes');
 const verifyStudentRoutes = require('./routes/verifyStudentRoutes');
-
-// Load environment variables
-dotenv.config();
 
 const app = express();
 

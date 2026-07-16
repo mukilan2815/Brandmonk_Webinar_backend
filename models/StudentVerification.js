@@ -6,6 +6,11 @@ const studentVerificationSchema = mongoose.Schema({
     required: true,
     trim: true
   },
+  email: {
+    type: String,
+    trim: true,
+    default: ''
+  },
   mobile: {
     type: String,
     required: true,
@@ -13,13 +18,13 @@ const studentVerificationSchema = mongoose.Schema({
   },
   courseName: {
     type: String,
-    required: true,
-    trim: true
+    trim: true,
+    default: ''
   },
   courseSlug: {
     type: String,
-    required: true,
-    trim: true
+    trim: true,
+    default: ''
   },
   certificateId: {
     type: String,
