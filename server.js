@@ -12,6 +12,7 @@ const adminRoutes = require('./routes/adminRoutes');
 const webinarRoutes = require('./routes/webinarRoutes');
 const courseStudentRoutes = require('./routes/courseStudentRoutes');
 const verifyStudentRoutes = require('./routes/verifyStudentRoutes');
+const { verifyEmailTransport } = require('./services/emailService');
 
 const app = express();
 
@@ -110,6 +111,7 @@ const startServer = async () => {
   try {
     // Attempt to connect to Database
     await connectDB();
+    await verifyEmailTransport();
     
     app.listen(PORT, () => {
       console.log('========================================');
@@ -122,6 +124,7 @@ const startServer = async () => {
     console.error('❌ Failed to connect to Database:', error.message);
     // Optional: Start server anyway to serve health check with error details? 
     // For now, let's allow it to start so we can debug via /api/health
+    console.error('[Email] SMTP verification skipped because database startup failed.');
     app.listen(PORT, () => console.log(`⚠️ Server running (DB Failed) on port ${PORT}`));
   }
 };

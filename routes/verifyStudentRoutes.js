@@ -57,9 +57,27 @@ router.post('/', async (req, res) => {
       certificateId
     });
 
+    const recipientEmail = (email || '').trim().toLowerCase();
+    console.log('[VerifyStudent] Registration saved:', {
+      entryId: entry._id.toString(),
+      name: name.trim(),
+      email: recipientEmail || 'missing',
+      mobile: cleanMobile,
+      courseName: courseName || '24th Graduation Function'
+    });
+
     // Send graduation email asynchronously in background
-    sendGraduationEmail(name.trim(), (email || '').trim())
-      .catch(err => console.error("Async Graduation Email Error:", err));
+    console.log('[VerifyStudent] Requesting onboarding email:', {
+      entryId: entry._id.toString(),
+      recipient: recipientEmail || 'missing'
+    });
+    sendGraduationEmail(name.trim(), recipientEmail)
+      .then(() => console.log('[VerifyStudent] Onboarding email handler completed:', entry._id.toString()))
+      .catch(err => console.error('[VerifyStudent] Onboarding email handler failed:', {
+        entryId: entry._id.toString(),
+        recipient: recipientEmail || 'missing',
+        message: err.message
+      }));
 
     res.json({
       success: true,

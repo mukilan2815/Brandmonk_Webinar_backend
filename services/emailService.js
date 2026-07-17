@@ -1,14 +1,40 @@
 const nodemailer = require('nodemailer');
 
+const smtpHost = process.env.SMTP_HOST || 'smtppro.zoho.com';
+const smtpPort = parseInt(process.env.SMTP_PORT, 10) || 465;
+const smtpSecure = process.env.SMTP_SECURE === 'true' || smtpPort === 465;
+const smtpUser = process.env.SMTP_USER || process.env.EMAIL_USER;
+const smtpPass = process.env.SMTP_PASS || process.env.EMAIL_PASS;
+
 const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST || 'smtppro.zoho.com',
-  port: parseInt(process.env.SMTP_PORT, 10) || 465,
-  secure: process.env.SMTP_SECURE === 'true' || true,
+  host: smtpHost,
+  port: smtpPort,
+  secure: smtpSecure,
   auth: {
-    user: process.env.SMTP_USER || process.env.EMAIL_USER,
-    pass: process.env.SMTP_PASS || process.env.EMAIL_PASS
+    user: smtpUser,
+    pass: smtpPass
   }
 });
+
+console.log('[Email] SMTP configuration:', {
+  host: smtpHost,
+  port: smtpPort,
+  secure: smtpSecure,
+  userConfigured: Boolean(smtpUser),
+  passwordConfigured: Boolean(smtpPass),
+  from: process.env.MAIL_FROM || smtpUser || 'not configured'
+});
+
+const verifyEmailTransport = async () => {
+  try {
+    await transporter.verify();
+    console.log('[Email] SMTP transport verified successfully. Emails can be sent.');
+    return true;
+  } catch (error) {
+    console.error('[Email] SMTP transport verification failed:', error.message);
+    return false;
+  }
+};
 
 /**
  * Sends a welcome email to the registered student asynchronously.
@@ -60,14 +86,23 @@ const sendWelcomeEmail = async (studentName, studentEmail, eventName) => {
 };
 
 const sendGraduationEmail = async (studentName, studentEmail) => {
-  if (!studentEmail) {
-    console.warn('Skipping graduation email: No email address provided.');
+  const recipient = (studentEmail || '').trim().toLowerCase();
+  console.log('[GraduationEmail] Send requested:', {
+    studentName,
+    recipient: recipient || 'missing',
+    smtpHost,
+    smtpPort,
+    smtpSecure
+  });
+
+  if (!recipient) {
+    console.warn('[GraduationEmail] Skipped: no email address provided.');
     return;
   }
 
   const mailOptions = {
     from: process.env.MAIL_FROM || `"Brand Monk Academy" <${process.env.SMTP_USER || process.env.EMAIL_USER}>`,
-    to: studentEmail,
+    to: recipient,
     subject: '🎓 Your Onboarding Pass - 24th Graduation Function | Brand Monk Academy',
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
@@ -104,10 +139,22 @@ const sendGraduationEmail = async (studentName, studentEmail) => {
 
   try {
     const info = await transporter.sendMail(mailOptions);
-    console.log(`Graduation email successfully sent to ${studentEmail}. MessageId: ${info.messageId}`);
+    console.log('[GraduationEmail] SMTP accepted message:', {
+      recipient,
+      messageId: info.messageId,
+      response: info.response,
+      accepted: info.accepted,
+      rejected: info.rejected
+    });
   } catch (error) {
-    console.error(`Failed to send graduation email to ${studentEmail}:`, error);
+    console.error('[GraduationEmail] SMTP send failed:', {
+      recipient,
+      code: error.code,
+      command: error.command,
+      response: error.response,
+      message: error.message
+    });
   }
 };
 
-module.exports = { sendWelcomeEmail, sendGraduationEmail };
+module.exports = { sendWelcomeEmail, sendGraduationEmail, verifyEmailTransport };
