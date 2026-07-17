@@ -155,7 +155,20 @@ class CertificateService {
   // Get verification data for a certificate
   static async getVerificationData(certificateId) {
     try {
-      const student = await CourseStudent.findOne({ certificateId });
+      if (!certificateId) return null;
+
+      // Some filenames/QRs use underscores instead of slashes (e.g. BMAJUNDMMES_Q0506S306)
+      const normalizedId = certificateId.replace(/_/g, '/');
+
+      let student = await CourseStudent.findOne({ certificateId: normalizedId });
+
+      if (!student && certificateId.match(/^[0-9a-fA-F]{24}$/)) {
+        student = await CourseStudent.findById(certificateId);
+      }
+
+      if (!student && normalizedId.match(/^[0-9a-fA-F]{24}$/)) {
+        student = await CourseStudent.findById(normalizedId);
+      }
 
       if (!student) {
         return null;

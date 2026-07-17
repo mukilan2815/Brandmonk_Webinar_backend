@@ -50,17 +50,25 @@ const MANUAL_CERTIFICATE_REGISTRY = {
 };
 
 const findCourseStudentForCertificate = async (rawId, decodedId) => {
-  let student = await CourseStudent.findOne({ certificateId: decodedId });
+  // Some filenames/URLs use underscores instead of slashes (e.g. BMAJUNDMMES_Q0506S306)
+  const normalizedRawId = rawId ? rawId.replace(/_/g, '/') : rawId;
+  const normalizedDecodedId = decodedId ? decodedId.replace(/_/g, '/') : decodedId;
 
-  if (!student && decodedId !== rawId) {
-    student = await CourseStudent.findOne({ certificateId: rawId });
+  let student = await CourseStudent.findOne({ certificateId: normalizedDecodedId });
+
+  if (!student && normalizedDecodedId !== normalizedRawId) {
+    student = await CourseStudent.findOne({ certificateId: normalizedRawId });
   }
 
-  const manualStudent = MANUAL_CERTIFICATE_REGISTRY[decodedId] || MANUAL_CERTIFICATE_REGISTRY[rawId];
+  if (!student && decodedId && decodedId.match(/^[0-9a-fA-F]{24}$/)) {
+    student = await CourseStudent.findById(decodedId);
+  }
 
-  if (!student && rawId.match(/^[0-9a-fA-F]{24}$/)) {
+  if (!student && rawId && rawId.match(/^[0-9a-fA-F]{24}$/)) {
     student = await CourseStudent.findById(rawId);
   }
+
+  const manualStudent = MANUAL_CERTIFICATE_REGISTRY[normalizedDecodedId] || MANUAL_CERTIFICATE_REGISTRY[normalizedRawId];
 
   if (!student && !manualStudent) {
     return null;
