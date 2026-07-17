@@ -44,7 +44,9 @@ const MANUAL_CERTIFICATE_REGISTRY = {
   'BMAJUNDMMES/Q0506S099': { name: 'sureka', courseName: 'Digital Marketing', courseSlug: 'digital-marketing' },
   'BMAJUNDMMES/Q0506S100': { name: 'Thulasi dass. B', courseName: 'Digital Marketing', courseSlug: 'digital-marketing' },
   'BMAJUNVEMES/Q1401S027': { name: 'POUL BLESSON . A', courseName: 'Video Editing', courseSlug: 'video-editing' },
-  'BMAJUNVEMES/Q1401S028': { name: 'M.Sham Kumar', courseName: 'Video Editing', courseSlug: 'video-editing' }
+  'BMAJUNVEMES/Q1401S028': { name: 'M.Sham Kumar', courseName: 'Video Editing', courseSlug: 'video-editing' },
+  'BMAJUNDMMES/Q0506S305': { name: 'Radhamani S', courseName: 'Digital Marketing', courseSlug: 'digital-marketing' },
+  'BMAJUNDMMES/Q0506S306': { name: 'Rekha', courseName: 'Digital Marketing', courseSlug: 'digital-marketing' }
 };
 
 const findCourseStudentForCertificate = async (rawId, decodedId) => {
