@@ -8,42 +8,92 @@ if (!logoExists) {
   console.warn('[Email] Logo file not found at:', LOGO_PATH, '— falling back to remote URL');
 }
 
+// Primary SMTP (Zoho)
 const smtpHost = process.env.SMTP_HOST || 'smtppro.zoho.com';
 const smtpPort = parseInt(process.env.SMTP_PORT, 10) || 465;
 const smtpSecure = process.env.SMTP_SECURE === 'true' || smtpPort === 465;
-const smtpUser = process.env.SMTP_USER || process.env.EMAIL_USER;
-const smtpPass = process.env.SMTP_PASS || process.env.EMAIL_PASS;
+const smtpUser = process.env.SMTP_USER;
+const smtpPass = process.env.SMTP_PASS;
 
-const transporter = nodemailer.createTransport({
-  host: smtpHost,
-  port: smtpPort,
-  secure: smtpSecure,
-  auth: {
-    user: smtpUser,
-    pass: smtpPass
-  }
-});
+// Fallback SMTP (Gmail)
+const gmailUser = process.env.EMAIL_USER;
+const gmailPass = process.env.EMAIL_PASS;
 
-const FROM_EMAIL = process.env.MAIL_FROM || `Brand Monk Academy <${smtpUser || 'no-reply@brandmonkacademy.com'}>`;
+const primaryTransporter = (smtpUser && smtpPass)
+  ? nodemailer.createTransport({
+      host: smtpHost,
+      port: smtpPort,
+      secure: smtpSecure,
+      auth: { user: smtpUser, pass: smtpPass }
+    })
+  : null;
+
+const fallbackTransporter = (gmailUser && gmailPass)
+  ? nodemailer.createTransport({
+      host: 'smtp.gmail.com',
+      port: 465,
+      secure: true,
+      auth: { user: gmailUser, pass: gmailPass }
+    })
+  : null;
+
+const FROM_EMAIL = process.env.MAIL_FROM || `Brand Monk Academy <${smtpUser || gmailUser || 'no-reply@brandmonkacademy.com'}>`;
+const FROM_EMAIL_FALLBACK = `Brand Monk Academy <${gmailUser || 'no-reply@brandmonkacademy.com'}>`;
 
 console.log('[Email] SMTP configuration:', {
-  host: smtpHost,
-  port: smtpPort,
-  secure: smtpSecure,
-  userConfigured: Boolean(smtpUser),
-  passwordConfigured: Boolean(smtpPass),
+  primaryHost: smtpHost,
+  primaryPort: smtpPort,
+  primarySecure: smtpSecure,
+  primaryConfigured: Boolean(primaryTransporter),
+  fallbackConfigured: Boolean(fallbackTransporter),
   from: FROM_EMAIL
 });
 
 const verifyEmailTransport = async () => {
-  try {
-    await transporter.verify();
-    console.log('[Email] SMTP transport verified successfully. Emails can be sent.');
-    return true;
-  } catch (error) {
-    console.error('[Email] SMTP transport verification failed:', error.message);
-    return false;
+  if (primaryTransporter) {
+    try {
+      await primaryTransporter.verify();
+      console.log('[Email] Primary SMTP (Zoho) verified successfully.');
+    } catch (error) {
+      console.error('[Email] Primary SMTP (Zoho) verification failed:', error.message);
+    }
   }
+  if (fallbackTransporter) {
+    try {
+      await fallbackTransporter.verify();
+      console.log('[Email] Fallback SMTP (Gmail) verified successfully.');
+    } catch (error) {
+      console.error('[Email] Fallback SMTP (Gmail) verification failed:', error.message);
+    }
+  }
+  return Boolean(primaryTransporter || fallbackTransporter);
+};
+
+// Tries primary SMTP first, then fallback if it fails
+const sendMailWithFallback = async (mailConfig) => {
+  if (primaryTransporter) {
+    try {
+      const info = await primaryTransporter.sendMail(mailConfig);
+      console.log('[Email] Primary SMTP accepted message:', info.messageId);
+      return { success: true, provider: 'zoho', info };
+    } catch (error) {
+      console.warn('[Email] Primary SMTP failed, trying fallback. Error:', error.message);
+    }
+  }
+
+  if (fallbackTransporter) {
+    try {
+      const fallbackConfig = { ...mailConfig, from: FROM_EMAIL_FALLBACK };
+      const info = await fallbackTransporter.sendMail(fallbackConfig);
+      console.log('[Email] Fallback SMTP accepted message:', info.messageId);
+      return { success: true, provider: 'gmail', info };
+    } catch (error) {
+      console.error('[Email] Fallback SMTP also failed:', error.message);
+      throw error;
+    }
+  }
+
+  throw new Error('No SMTP transporter configured or both failed.');
 };
 
 /**
@@ -88,10 +138,10 @@ const sendWelcomeEmail = async (studentName, studentEmail, eventName) => {
   };
 
   try {
-    const info = await transporter.sendMail(mailOptions);
-    console.log(`Welcome email successfully sent to ${studentEmail}. MessageId: ${info.messageId}`);
+    const { info, provider } = await sendMailWithFallback(mailOptions);
+    console.log(`[WelcomeEmail] Sent via ${provider} to ${studentEmail}. MessageId: ${info.messageId}`);
   } catch (error) {
-    console.error(`Failed to send welcome email to ${studentEmail}:`, error);
+    console.error(`[WelcomeEmail] Failed to send to ${studentEmail}:`, error.message);
   }
 };
 
@@ -99,7 +149,7 @@ const sendWelcomeEmail = async (studentName, studentEmail, eventName) => {
 // Processes emails one at a time with a delay to respect SMTP rate limits
 const emailQueue = [];
 let isQueueProcessing = false;
-const QUEUE_DELAY_MS = 2000; // 2 seconds between emails = ~30 emails/min
+const QUEUE_DELAY_MS = 5000; // 5 seconds between emails = ~12 emails/min, safer for Zoho/Gmail
 
 const processQueue = async () => {
   if (isQueueProcessing || emailQueue.length === 0) return;
@@ -211,17 +261,17 @@ const sendGraduationEmailDirect = async (studentData) => {
       mailConfig.attachments = [{ filename: 'logo-bm.png', path: LOGO_PATH, cid: 'logo-bm' }];
     }
 
-    const info = await transporter.sendMail(mailConfig);
-    console.log('[GraduationEmail] SMTP accepted message:', {
+    const { info, provider } = await sendMailWithFallback(mailConfig);
+    console.log(`[GraduationEmail] Sent via ${provider}:`, {
       recipient,
       messageId: info.messageId,
       response: info.response,
       accepted: info.accepted,
       rejected: info.rejected
     });
-    return { success: true, messageId: info.messageId, response: info.response };
+    return { success: true, messageId: info.messageId, response: info.response, provider };
   } catch (error) {
-    console.error('[GraduationEmail] SMTP send failed:', {
+    console.error('[GraduationEmail] SMTP send failed (both providers):', {
       recipient,
       code: error.code,
       command: error.command,
