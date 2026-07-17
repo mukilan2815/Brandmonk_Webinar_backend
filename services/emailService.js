@@ -139,34 +139,26 @@ const sendGraduationEmail = async (studentData) => {
             <p style="margin: 4px 0 0 0; color: #fff; font-size: 12px;">24th Graduation Function • Brand Monk Academy</p>
           </div>
           <div style="padding: 20px 25px; background: #fff;">
-            <table style="width: 100%; border-collapse: collapse;">
-              <tr>
-                <td style="padding: 8px 0; border-bottom: 1px solid #f0f0f0; width: 40%;">
-                  <span style="font-size: 11px; color: #999; text-transform: uppercase; letter-spacing: 1px;">Name</span><br/>
-                  <span style="font-size: 15px; color: #333; font-weight: 600;">${studentName}</span>
-                </td>
-                <td style="padding: 8px 0 8px 15px; border-bottom: 1px solid #f0f0f0;">
-                  <span style="font-size: 11px; color: #999; text-transform: uppercase; letter-spacing: 1px;">Course</span><br/>
-                  <span style="font-size: 15px; color: #333; font-weight: 600;">${courseName || '24th Graduation Function'}</span>
-                </td>
-              </tr>
-              <tr>
-                <td style="padding: 8px 0; border-bottom: 1px solid #f0f0f0;">
-                  <span style="font-size: 11px; color: #999; text-transform: uppercase; letter-spacing: 1px;">Email</span><br/>
-                  <span style="font-size: 15px; color: #333; font-weight: 600;">${recipient}</span>
-                </td>
-                <td style="padding: 8px 0 8px 15px; border-bottom: 1px solid #f0f0f0;">
-                  <span style="font-size: 11px; color: #999; text-transform: uppercase; letter-spacing: 1px;">Mobile</span><br/>
-                  <span style="font-size: 15px; color: #333; font-weight: 600;">${mobile || 'N/A'}</span>
-                </td>
-              </tr>
-              <tr>
-                <td style="padding: 8px 0;" colspan="2">
-                  <span style="font-size: 11px; color: #999; text-transform: uppercase; letter-spacing: 1px;">Registered At</span><br/>
-                  <span style="font-size: 15px; color: #333; font-weight: 600;">${formattedDate}</span>
-                </td>
-              </tr>
-            </table>
+            <div style="padding: 10px 0; border-bottom: 1px solid #f0f0f0;">
+              <span style="font-size: 11px; color: #999; text-transform: uppercase; letter-spacing: 1px;">Name</span><br/>
+              <span style="font-size: 15px; color: #333; font-weight: 600; word-break: break-word;">${studentName}</span>
+            </div>
+            <div style="padding: 10px 0; border-bottom: 1px solid #f0f0f0;">
+              <span style="font-size: 11px; color: #999; text-transform: uppercase; letter-spacing: 1px;">Course</span><br/>
+              <span style="font-size: 15px; color: #333; font-weight: 600; word-break: break-word;">${courseName || '24th Graduation Function'}</span>
+            </div>
+            <div style="padding: 10px 0; border-bottom: 1px solid #f0f0f0;">
+              <span style="font-size: 11px; color: #999; text-transform: uppercase; letter-spacing: 1px;">Email</span><br/>
+              <span style="font-size: 15px; color: #333; font-weight: 600; word-break: break-all;">${recipient}</span>
+            </div>
+            <div style="padding: 10px 0; border-bottom: 1px solid #f0f0f0;">
+              <span style="font-size: 11px; color: #999; text-transform: uppercase; letter-spacing: 1px;">Mobile</span><br/>
+              <span style="font-size: 15px; color: #333; font-weight: 600;">${mobile || 'N/A'}</span>
+            </div>
+            <div style="padding: 10px 0;">
+              <span style="font-size: 11px; color: #999; text-transform: uppercase; letter-spacing: 1px;">Registered At</span><br/>
+              <span style="font-size: 15px; color: #333; font-weight: 600;">${formattedDate}</span>
+            </div>
           </div>
           <div style="background: #f9f3e6; padding: 12px 25px; text-align: center; border-top: 1px dashed #D4AF37;">
             <p style="margin: 0; font-size: 13px; color: #4D1010; font-weight: 600;">🪔 Kuthuvilakku Ceremony</p>
