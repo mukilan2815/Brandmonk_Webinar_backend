@@ -36,14 +36,14 @@ router.post('/', async (req, res) => {
     // Optionally check if student exists in CourseStudent to grab real course details
     const student = await CourseStudent.findOne({ phoneNumber: cleanMobile });
 
-    let courseName = '24th Graduation Function';
-    let courseSlug = 'graduation-function';
-    let certificateId = `BMA-GRAD-${Math.floor(100000 + Math.random() * 900000)}`;
+    let courseName = null;
+    let courseSlug = null;
+    let certificateId = null;
 
     if (student) {
-      courseName = student.courseName || courseName;
-      courseSlug = student.courseSlug || courseSlug;
-      certificateId = student.certificateId || certificateId;
+      courseName = student.courseName || null;
+      courseSlug = student.courseSlug || null;
+      certificateId = student.certificateId || null;
     }
 
     // Store the submission
