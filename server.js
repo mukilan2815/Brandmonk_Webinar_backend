@@ -27,6 +27,7 @@ const corsOptions = {
   origin: [
     'https://brand-monk.vercel.app',
     'https://brand-monk-ga7q20shy-mukilans-projects.vercel.app',
+    'https://registrations.brandmonkacademy.com',
     'http://localhost:3000',
     'http://localhost:3001',
     'http://localhost:5000',
