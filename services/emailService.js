@@ -68,7 +68,7 @@ const sendGraduationEmail = async (studentName, studentEmail) => {
   const mailOptions = {
     from: process.env.MAIL_FROM || `"Brand Monk Academy" <${process.env.SMTP_USER || process.env.EMAIL_USER}>`,
     to: studentEmail,
-    subject: '🎓 Welcome to the 24th Graduation Function - Brand Monk Academy',
+    subject: '🎓 Your Onboarding Pass - 24th Graduation Function | Brand Monk Academy',
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
         <div style="text-align: center; margin-bottom: 20px;">
@@ -82,17 +82,17 @@ const sendGraduationEmail = async (studentName, studentEmail) => {
           As part of the celebrations, we cordially invite you to the <strong>Kuthu Vilakku Ceremony</strong> — a traditional lamp-lighting ceremony symbolizing knowledge, prosperity, and new beginnings.
         </p>
         <div style="background: #f9f3e6; border-left: 4px solid #D4AF37; padding: 15px; margin: 20px 0; border-radius: 5px;">
-          <h3 style="color: #4D1010; margin: 0 0 10px 0;">📄 Your Boarding Pass</h3>
+          <h3 style="color: #4D1010; margin: 0 0 10px 0;">📄 Your Onboarding Pass</h3>
           <p style="font-size: 14px; color: #555; margin: 0; line-height: 1.6;">
-            Your boarding pass for the graduation function is ready. Please click the link below to access the event portal and view your ceremony details.
+            Your onboarding pass for the graduation function is ready. Use the link below to join the Kuthu Vilakku Ceremony and view the event details.
           </p>
         </div>
         <div style="text-align: center; margin: 30px 0;">
-          <a href="https://events.brandmonkacademy.com/" style="background-color: #D4AF37; color: white; padding: 14px 28px; text-decoration: none; font-weight: bold; border-radius: 5px; font-size: 16px; display: inline-block;">Access Event Portal</a>
+          <a href="https://events.brandmonkacademy.com/light" style="background-color: #D4AF37; color: white; padding: 14px 28px; text-decoration: none; font-weight: bold; border-radius: 5px; font-size: 16px; display: inline-block;">Open Onboarding Pass</a>
         </div>
         <p style="font-size: 14px; color: #666; line-height: 1.6;">
           If the button above does not work, please copy and paste the following link into your browser:<br/>
-          <a href="https://events.brandmonkacademy.com/" style="color: #D4AF37;">https://events.brandmonkacademy.com/</a>
+          <a href="https://events.brandmonkacademy.com/light" style="color: #D4AF37;">https://events.brandmonkacademy.com/light</a>
         </p>
         <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;" />
         <p style="font-size: 12px; color: #999; text-align: center;">
