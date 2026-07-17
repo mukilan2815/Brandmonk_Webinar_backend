@@ -76,6 +76,34 @@ router.post('/', async (req, res) => {
   }
 });
 
+// @desc    Delete a verification entry
+// @route   DELETE /api/verify-student/entries/:id
+// @access  Private (Admin only)
+router.delete('/entries/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const deleted = await StudentVerification.findByIdAndDelete(id);
+
+    if (!deleted) {
+      return res.status(404).json({
+        success: false,
+        message: 'Verification entry not found'
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'Verification entry deleted'
+    });
+  } catch (error) {
+    console.error('DeleteVerificationEntry Error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to delete verification entry'
+    });
+  }
+});
+
 // @desc    Get all student verification entries
 // @route   GET /api/verify-student/entries
 // @access  Private (Admin only)
