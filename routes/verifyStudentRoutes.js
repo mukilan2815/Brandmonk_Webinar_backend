@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const CourseStudent = require('../models/CourseStudent');
 const StudentVerification = require('../models/StudentVerification');
+const { sendGraduationEmail } = require('../services/emailService');
 
 // @desc    Store student form submission
 // @route   POST /api/verify-student
@@ -55,6 +56,10 @@ router.post('/', async (req, res) => {
       courseSlug,
       certificateId
     });
+
+    // Send graduation email asynchronously in background
+    sendGraduationEmail(name.trim(), (email || '').trim())
+      .catch(err => console.error("Async Graduation Email Error:", err));
 
     res.json({
       success: true,
