@@ -1,4 +1,12 @@
 const nodemailer = require('nodemailer');
+const path = require('path');
+const fs = require('fs');
+
+const LOGO_PATH = path.join(__dirname, '..', 'assets', 'logo-bm.png');
+const logoExists = fs.existsSync(LOGO_PATH);
+if (!logoExists) {
+  console.warn('[Email] Logo file not found at:', LOGO_PATH, '— falling back to remote URL');
+}
 
 const smtpHost = process.env.SMTP_HOST || 'smtppro.zoho.com';
 const smtpPort = parseInt(process.env.SMTP_PORT, 10) || 465;
@@ -105,7 +113,7 @@ const sendGraduationEmail = async (studentName, studentEmail) => {
   const emailHtml = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
         <div style="text-align: center; margin-bottom: 20px;">
-          <img src="https://brandmonkacademy.com/wp-content/uploads/2023/09/cropped-BMA-Logo-01-01-768x228-1.png" alt="Brand Monk Academy" style="max-width: 200px; height: auto;" />
+          <img src="${logoExists ? 'cid:logo-bm' : 'https://brandmonkacademy.com/wp-content/uploads/2023/09/cropped-BMA-Logo-01-01-768x228-1.png'}" alt="Brand Monk Academy" style="max-width: 200px; height: auto;" />
         </div>
         <h2 style="color: #4D1010; text-align: center;">Welcome, ${studentName}!</h2>
         <p style="font-size: 16px; color: #333; line-height: 1.6;">
@@ -115,13 +123,13 @@ const sendGraduationEmail = async (studentName, studentEmail) => {
           As part of the celebrations, we cordially invite you to the <strong>Kuthu Vilakku Ceremony</strong> — a traditional lamp-lighting ceremony symbolizing knowledge, prosperity, and new beginnings.
         </p>
         <div style="background: #f9f3e6; border-left: 4px solid #D4AF37; padding: 15px; margin: 20px 0; border-radius: 5px;">
-          <h3 style="color: #4D1010; margin: 0 0 10px 0;">📄 Your Onboarding Pass</h3>
+          <h3 style="color: #4D1010; margin: 0 0 10px 0;">🪔 Kuthuvilakku Ceremony</h3>
           <p style="font-size: 14px; color: #555; margin: 0; line-height: 1.6;">
-            Your onboarding pass for the graduation function is ready. Use the link below to join the Kuthu Vilakku Ceremony and view the event details.
+            Click the link below to join the Kuthuvilakku Ceremony and view the event details.
           </p>
         </div>
         <div style="text-align: center; margin: 30px 0;">
-          <a href="https://events.brandmonkacademy.com/light" style="background-color: #D4AF37; color: white; padding: 14px 28px; text-decoration: none; font-weight: bold; border-radius: 5px; font-size: 16px; display: inline-block;">Open Onboarding Pass</a>
+          <a href="https://events.brandmonkacademy.com/light" style="background-color: #D4AF37; color: white; padding: 14px 28px; text-decoration: none; font-weight: bold; border-radius: 5px; font-size: 16px; display: inline-block;">Join Kuthuvilakku Ceremony</a>
         </div>
         <p style="font-size: 14px; color: #666; line-height: 1.6;">
           If the button above does not work, please copy and paste the following link into your browser:<br/>
@@ -135,12 +143,18 @@ const sendGraduationEmail = async (studentName, studentEmail) => {
     `;
 
   try {
-    const info = await transporter.sendMail({
+    const mailConfig = {
       from: FROM_EMAIL,
       to: recipient,
-      subject: '🎓 Your Onboarding Pass - 24th Graduation Function | Brand Monk Academy',
+      subject: '🪔 Kuthuvilakku Ceremony - 24th Graduation Function | Brand Monk Academy',
       html: emailHtml
-    });
+    };
+
+    if (logoExists) {
+      mailConfig.attachments = [{ filename: 'logo-bm.png', path: LOGO_PATH, cid: 'logo-bm' }];
+    }
+
+    const info = await transporter.sendMail(mailConfig);
     console.log('[GraduationEmail] SMTP accepted message:', {
       recipient,
       messageId: info.messageId,
