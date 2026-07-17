@@ -95,18 +95,37 @@ const sendWelcomeEmail = async (studentName, studentEmail, eventName) => {
   }
 };
 
-const sendGraduationEmail = async (studentData) => {
+// --- Email Queue for bulk registration events ---
+// Processes emails one at a time with a delay to respect SMTP rate limits
+const emailQueue = [];
+let isQueueProcessing = false;
+const QUEUE_DELAY_MS = 2000; // 2 seconds between emails = ~30 emails/min
+
+const processQueue = async () => {
+  if (isQueueProcessing || emailQueue.length === 0) return;
+  isQueueProcessing = true;
+
+  while (emailQueue.length > 0) {
+    const { studentData, resolve } = emailQueue.shift();
+    try {
+      const result = await sendGraduationEmailDirect(studentData);
+      resolve(result);
+    } catch (err) {
+      resolve({ success: false, error: err.message });
+    }
+    if (emailQueue.length > 0) {
+      await new Promise(r => setTimeout(r, QUEUE_DELAY_MS));
+    }
+  }
+
+  isQueueProcessing = false;
+  console.log(`[EmailQueue] Queue empty. All emails processed.`);
+};
+
+// Rename the actual send function
+const sendGraduationEmailDirect = async (studentData) => {
   const { name: studentName, email: studentEmail, mobile, courseName, registeredAt } = studentData;
   const recipient = (studentEmail || '').trim().toLowerCase();
-  console.log('[GraduationEmail] Send requested:', {
-    studentName,
-    recipient: recipient || 'missing',
-    mobile,
-    courseName,
-    smtpHost,
-    smtpPort,
-    smtpSecure
-  });
 
   if (!recipient) {
     console.warn('[GraduationEmail] Skipped: no email address provided.');
@@ -211,6 +230,15 @@ const sendGraduationEmail = async (studentData) => {
     });
     return { success: false, error: error.message, code: error.code, response: error.response };
   }
+};
+
+// Public function — enqueues email and returns immediately with queued status
+const sendGraduationEmail = (studentData) => {
+  console.log('[EmailQueue] Enqueuing email for:', studentData?.email || 'missing', '| Queue length:', emailQueue.length + 1);
+  return new Promise((resolve) => {
+    emailQueue.push({ studentData, resolve });
+    processQueue();
+  });
 };
 
 module.exports = { sendWelcomeEmail, sendGraduationEmail, verifyEmailTransport };

@@ -66,23 +66,29 @@ router.post('/', async (req, res) => {
       courseName: courseName || '24th Graduation Function'
     });
 
-    // Send onboarding email and capture status for frontend logging
-    console.log('[VerifyStudent] Requesting onboarding email:', {
+    // Enqueue email — non-blocking so registration responds instantly
+    console.log('[VerifyStudent] Enqueuing onboarding email:', {
       entryId: entry._id.toString(),
       recipient: recipientEmail || 'missing'
     });
-    const emailStatus = await sendGraduationEmail({
+    sendGraduationEmail({
       name: name.trim(),
       email: recipientEmail,
       mobile: cleanMobile,
       courseName: courseName || '24th Graduation Function',
       registeredAt: entry.createdAt || new Date()
-    });
-    console.log('[VerifyStudent] Onboarding email result:', {
-      entryId: entry._id.toString(),
-      success: emailStatus.success,
-      messageId: emailStatus.messageId,
-      error: emailStatus.error
+    }).then(emailStatus => {
+      console.log('[VerifyStudent] Onboarding email result:', {
+        entryId: entry._id.toString(),
+        success: emailStatus.success,
+        messageId: emailStatus.messageId,
+        error: emailStatus.error
+      });
+    }).catch(err => {
+      console.error('[VerifyStudent] Onboarding email unexpected error:', {
+        entryId: entry._id.toString(),
+        message: err.message
+      });
     });
 
     res.json({
@@ -95,7 +101,7 @@ router.post('/', async (req, res) => {
         courseSlug,
         certificateId
       },
-      emailStatus
+      emailStatus: { success: true, message: 'Email queued for delivery' }
     });
   } catch (error) {
     console.error('VerifyStudent Error:', error);
