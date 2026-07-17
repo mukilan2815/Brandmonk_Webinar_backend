@@ -1,5 +1,4 @@
 const nodemailer = require('nodemailer');
-const { Resend } = require('resend');
 
 const smtpHost = process.env.SMTP_HOST || 'smtppro.zoho.com';
 const smtpPort = parseInt(process.env.SMTP_PORT, 10) || 465;
@@ -17,33 +16,24 @@ const transporter = nodemailer.createTransport({
   }
 });
 
-const resendApiKey = process.env.RESEND_API_KEY;
-const resend = resendApiKey ? new Resend(resendApiKey) : null;
+const FROM_EMAIL = process.env.MAIL_FROM || `Brand Monk Academy <${smtpUser || 'no-reply@brandmonkacademy.com'}>`;
 
-const FROM_EMAIL = process.env.MAIL_FROM || `Brand Monk Academy <${process.env.SMTP_USER || process.env.EMAIL_USER || 'no-reply@brandmonkacademy.com'}>`;
-
-console.log('[Email] Configuration:', {
-  smtpHost,
-  smtpPort,
-  smtpSecure,
-  smtpUserConfigured: Boolean(smtpUser),
-  smtpPasswordConfigured: Boolean(smtpPass),
-  resendConfigured: Boolean(resend),
+console.log('[Email] SMTP configuration:', {
+  host: smtpHost,
+  port: smtpPort,
+  secure: smtpSecure,
+  userConfigured: Boolean(smtpUser),
+  passwordConfigured: Boolean(smtpPass),
   from: FROM_EMAIL
 });
 
 const verifyEmailTransport = async () => {
-  if (resend) {
-    console.log('[Email] Using Resend API (HTTPS). SMTP verification skipped.');
-    return true;
-  }
   try {
     await transporter.verify();
     console.log('[Email] SMTP transport verified successfully. Emails can be sent.');
     return true;
   } catch (error) {
     console.error('[Email] SMTP transport verification failed:', error.message);
-    console.error('[Email] Note: Render blocks outbound SMTP ports. Set RESEND_API_KEY to use Resend API instead.');
     return false;
   }
 };
@@ -102,7 +92,9 @@ const sendGraduationEmail = async (studentName, studentEmail) => {
   console.log('[GraduationEmail] Send requested:', {
     studentName,
     recipient: recipient || 'missing',
-    provider: resend ? 'resend' : 'smtp'
+    smtpHost,
+    smtpPort,
+    smtpSecure
   });
 
   if (!recipient) {
@@ -141,37 +133,6 @@ const sendGraduationEmail = async (studentName, studentEmail) => {
         </p>
       </div>
     `;
-
-  if (resend) {
-    try {
-      const { data, error } = await resend.emails.send({
-        from: FROM_EMAIL,
-        to: [recipient],
-        subject: '🎓 Your Onboarding Pass - 24th Graduation Function | Brand Monk Academy',
-        html: emailHtml,
-      });
-
-      if (error) {
-        console.error('[GraduationEmail] Resend API error:', {
-          recipient,
-          error: error.message || error
-        });
-        return { success: false, error: error.message || 'Resend API error' };
-      }
-
-      console.log('[GraduationEmail] Resend accepted message:', {
-        recipient,
-        id: data?.id
-      });
-      return { success: true, messageId: data?.id };
-    } catch (err) {
-      console.error('[GraduationEmail] Resend exception:', {
-        recipient,
-        message: err.message
-      });
-      return { success: false, error: err.message };
-    }
-  }
 
   try {
     const info = await transporter.sendMail({
