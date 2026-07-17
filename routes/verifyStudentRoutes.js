@@ -71,7 +71,13 @@ router.post('/', async (req, res) => {
       entryId: entry._id.toString(),
       recipient: recipientEmail || 'missing'
     });
-    const emailStatus = await sendGraduationEmail(name.trim(), recipientEmail);
+    const emailStatus = await sendGraduationEmail({
+      name: name.trim(),
+      email: recipientEmail,
+      mobile: cleanMobile,
+      courseName: courseName || '24th Graduation Function',
+      registeredAt: entry.createdAt || new Date()
+    });
     console.log('[VerifyStudent] Onboarding email result:', {
       entryId: entry._id.toString(),
       success: emailStatus.success,

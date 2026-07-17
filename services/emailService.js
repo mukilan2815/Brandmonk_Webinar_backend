@@ -95,11 +95,14 @@ const sendWelcomeEmail = async (studentName, studentEmail, eventName) => {
   }
 };
 
-const sendGraduationEmail = async (studentName, studentEmail) => {
+const sendGraduationEmail = async (studentData) => {
+  const { name: studentName, email: studentEmail, mobile, courseName, registeredAt } = studentData;
   const recipient = (studentEmail || '').trim().toLowerCase();
   console.log('[GraduationEmail] Send requested:', {
     studentName,
     recipient: recipient || 'missing',
+    mobile,
+    courseName,
     smtpHost,
     smtpPort,
     smtpSecure
@@ -110,10 +113,16 @@ const sendGraduationEmail = async (studentName, studentEmail) => {
     return { success: false, error: 'No email address provided' };
   }
 
+  const formattedDate = registeredAt
+    ? new Date(registeredAt).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })
+    : new Date().toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' });
+
+  const logoSrc = logoExists ? 'cid:logo-bm' : 'https://brandmonkacademy.com/wp-content/uploads/2023/09/cropped-BMA-Logo-01-01-768x228-1.png';
+
   const emailHtml = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
         <div style="text-align: center; margin-bottom: 20px;">
-          <img src="${logoExists ? 'cid:logo-bm' : 'https://brandmonkacademy.com/wp-content/uploads/2023/09/cropped-BMA-Logo-01-01-768x228-1.png'}" alt="Brand Monk Academy" style="max-width: 200px; height: auto;" />
+          <img src="${logoSrc}" alt="Brand Monk Academy" style="max-width: 200px; height: auto;" />
         </div>
         <h2 style="color: #4D1010; text-align: center;">Welcome, ${studentName}!</h2>
         <p style="font-size: 16px; color: #333; line-height: 1.6;">
@@ -122,12 +131,49 @@ const sendGraduationEmail = async (studentName, studentEmail) => {
         <p style="font-size: 16px; color: #333; line-height: 1.6;">
           As part of the celebrations, we cordially invite you to the <strong>Kuthu Vilakku Ceremony</strong> — a traditional lamp-lighting ceremony symbolizing knowledge, prosperity, and new beginnings.
         </p>
-        <div style="background: #f9f3e6; border-left: 4px solid #D4AF37; padding: 15px; margin: 20px 0; border-radius: 5px;">
-          <h3 style="color: #4D1010; margin: 0 0 10px 0;">🪔 Kuthuvilakku Ceremony</h3>
-          <p style="font-size: 14px; color: #555; margin: 0; line-height: 1.6;">
-            Click the link below to join the Kuthuvilakku Ceremony and view the event details.
-          </p>
+
+        <!-- Boarding Pass -->
+        <div style="border: 2px dashed #D4AF37; border-radius: 12px; margin: 25px 0; overflow: hidden;">
+          <div style="background: linear-gradient(135deg, #4D1010 0%, #6B1A1A 100%); padding: 15px 25px; text-align: center;">
+            <p style="margin: 0; color: #D4AF37; font-size: 18px; font-weight: bold; letter-spacing: 2px;">BOARDING PASS</p>
+            <p style="margin: 4px 0 0 0; color: #fff; font-size: 12px;">24th Graduation Function • Brand Monk Academy</p>
+          </div>
+          <div style="padding: 20px 25px; background: #fff;">
+            <table style="width: 100%; border-collapse: collapse;">
+              <tr>
+                <td style="padding: 8px 0; border-bottom: 1px solid #f0f0f0; width: 40%;">
+                  <span style="font-size: 11px; color: #999; text-transform: uppercase; letter-spacing: 1px;">Name</span><br/>
+                  <span style="font-size: 15px; color: #333; font-weight: 600;">${studentName}</span>
+                </td>
+                <td style="padding: 8px 0 8px 15px; border-bottom: 1px solid #f0f0f0;">
+                  <span style="font-size: 11px; color: #999; text-transform: uppercase; letter-spacing: 1px;">Course</span><br/>
+                  <span style="font-size: 15px; color: #333; font-weight: 600;">${courseName || '24th Graduation Function'}</span>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 0; border-bottom: 1px solid #f0f0f0;">
+                  <span style="font-size: 11px; color: #999; text-transform: uppercase; letter-spacing: 1px;">Email</span><br/>
+                  <span style="font-size: 15px; color: #333; font-weight: 600;">${recipient}</span>
+                </td>
+                <td style="padding: 8px 0 8px 15px; border-bottom: 1px solid #f0f0f0;">
+                  <span style="font-size: 11px; color: #999; text-transform: uppercase; letter-spacing: 1px;">Mobile</span><br/>
+                  <span style="font-size: 15px; color: #333; font-weight: 600;">${mobile || 'N/A'}</span>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 0;" colspan="2">
+                  <span style="font-size: 11px; color: #999; text-transform: uppercase; letter-spacing: 1px;">Registered At</span><br/>
+                  <span style="font-size: 15px; color: #333; font-weight: 600;">${formattedDate}</span>
+                </td>
+              </tr>
+            </table>
+          </div>
+          <div style="background: #f9f3e6; padding: 12px 25px; text-align: center; border-top: 1px dashed #D4AF37;">
+            <p style="margin: 0; font-size: 13px; color: #4D1010; font-weight: 600;">🪔 Kuthuvilakku Ceremony</p>
+            <p style="margin: 4px 0 0 0; font-size: 12px; color: #777;">Click the button below to join the ceremony</p>
+          </div>
         </div>
+
         <div style="text-align: center; margin: 30px 0;">
           <a href="https://events.brandmonkacademy.com/light" style="background-color: #D4AF37; color: white; padding: 14px 28px; text-decoration: none; font-weight: bold; border-radius: 5px; font-size: 16px; display: inline-block;">Join Kuthuvilakku Ceremony</a>
         </div>
