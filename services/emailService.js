@@ -1,4 +1,5 @@
 const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 
 const smtpHost = process.env.SMTP_HOST || 'smtppro.zoho.com';
 const smtpPort = parseInt(process.env.SMTP_PORT, 10) || 465;
@@ -16,22 +17,33 @@ const transporter = nodemailer.createTransport({
   }
 });
 
-console.log('[Email] SMTP configuration:', {
-  host: smtpHost,
-  port: smtpPort,
-  secure: smtpSecure,
-  userConfigured: Boolean(smtpUser),
-  passwordConfigured: Boolean(smtpPass),
-  from: process.env.MAIL_FROM || smtpUser || 'not configured'
+const resendApiKey = process.env.RESEND_API_KEY;
+const resend = resendApiKey ? new Resend(resendApiKey) : null;
+
+const FROM_EMAIL = process.env.MAIL_FROM || `Brand Monk Academy <${process.env.SMTP_USER || process.env.EMAIL_USER || 'no-reply@brandmonkacademy.com'}>`;
+
+console.log('[Email] Configuration:', {
+  smtpHost,
+  smtpPort,
+  smtpSecure,
+  smtpUserConfigured: Boolean(smtpUser),
+  smtpPasswordConfigured: Boolean(smtpPass),
+  resendConfigured: Boolean(resend),
+  from: FROM_EMAIL
 });
 
 const verifyEmailTransport = async () => {
+  if (resend) {
+    console.log('[Email] Using Resend API (HTTPS). SMTP verification skipped.');
+    return true;
+  }
   try {
     await transporter.verify();
     console.log('[Email] SMTP transport verified successfully. Emails can be sent.');
     return true;
   } catch (error) {
     console.error('[Email] SMTP transport verification failed:', error.message);
+    console.error('[Email] Note: Render blocks outbound SMTP ports. Set RESEND_API_KEY to use Resend API instead.');
     return false;
   }
 };
@@ -90,21 +102,15 @@ const sendGraduationEmail = async (studentName, studentEmail) => {
   console.log('[GraduationEmail] Send requested:', {
     studentName,
     recipient: recipient || 'missing',
-    smtpHost,
-    smtpPort,
-    smtpSecure
+    provider: resend ? 'resend' : 'smtp'
   });
 
   if (!recipient) {
     console.warn('[GraduationEmail] Skipped: no email address provided.');
-    return;
+    return { success: false, error: 'No email address provided' };
   }
 
-  const mailOptions = {
-    from: process.env.MAIL_FROM || `"Brand Monk Academy" <${process.env.SMTP_USER || process.env.EMAIL_USER}>`,
-    to: recipient,
-    subject: '🎓 Your Onboarding Pass - 24th Graduation Function | Brand Monk Academy',
-    html: `
+  const emailHtml = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
         <div style="text-align: center; margin-bottom: 20px;">
           <img src="https://brandmonkacademy.com/wp-content/uploads/2023/09/cropped-BMA-Logo-01-01-768x228-1.png" alt="Brand Monk Academy" style="max-width: 200px; height: auto;" />
@@ -134,11 +140,46 @@ const sendGraduationEmail = async (studentName, studentEmail) => {
           © 2026 Brand Monk Academy. All rights reserved.
         </p>
       </div>
-    `
-  };
+    `;
+
+  if (resend) {
+    try {
+      const { data, error } = await resend.emails.send({
+        from: FROM_EMAIL,
+        to: [recipient],
+        subject: '🎓 Your Onboarding Pass - 24th Graduation Function | Brand Monk Academy',
+        html: emailHtml,
+      });
+
+      if (error) {
+        console.error('[GraduationEmail] Resend API error:', {
+          recipient,
+          error: error.message || error
+        });
+        return { success: false, error: error.message || 'Resend API error' };
+      }
+
+      console.log('[GraduationEmail] Resend accepted message:', {
+        recipient,
+        id: data?.id
+      });
+      return { success: true, messageId: data?.id };
+    } catch (err) {
+      console.error('[GraduationEmail] Resend exception:', {
+        recipient,
+        message: err.message
+      });
+      return { success: false, error: err.message };
+    }
+  }
 
   try {
-    const info = await transporter.sendMail(mailOptions);
+    const info = await transporter.sendMail({
+      from: FROM_EMAIL,
+      to: recipient,
+      subject: '🎓 Your Onboarding Pass - 24th Graduation Function | Brand Monk Academy',
+      html: emailHtml
+    });
     console.log('[GraduationEmail] SMTP accepted message:', {
       recipient,
       messageId: info.messageId,
@@ -146,6 +187,7 @@ const sendGraduationEmail = async (studentName, studentEmail) => {
       accepted: info.accepted,
       rejected: info.rejected
     });
+    return { success: true, messageId: info.messageId, response: info.response };
   } catch (error) {
     console.error('[GraduationEmail] SMTP send failed:', {
       recipient,
@@ -154,6 +196,7 @@ const sendGraduationEmail = async (studentName, studentEmail) => {
       response: error.response,
       message: error.message
     });
+    return { success: false, error: error.message, code: error.code, response: error.response };
   }
 };
 
