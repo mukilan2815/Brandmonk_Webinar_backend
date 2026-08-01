@@ -1,6 +1,5 @@
 const Student = require('../models/Student');
 const Admin = require('../models/Admin');
-const { Resend } = require('resend');
 
 
 // Admin credentials (in production, use bcrypt and proper auth)
@@ -362,6 +361,11 @@ const toggleEligibility = async (req, res) => {
 // @route   POST /api/admin/students/:id/send-certificate
 // @access  Private (Coimbatore Admin only)
 const sendCertificateEmail = async (req, res) => {
+  return res.status(410).json({
+    success: false,
+    message: 'Email delivery is disabled.'
+  });
+
   const studentId = req.params.id;
   console.log("Send Certificate Email:", studentId);
 

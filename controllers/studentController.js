@@ -1,6 +1,5 @@
 const Student = require('../models/Student');
 const Webinar = require('../models/Webinar');
-const { sendWelcomeEmail } = require('../services/emailService');
 
 // Generate certificate ID
 
@@ -120,10 +119,6 @@ const registerStudent = async (req, res) => {
     });
 
     console.log("Student Registered:", savedStudent._id);
-
-    // Send welcome email asynchronously in background
-    sendWelcomeEmail(savedStudent.name, savedStudent.email, savedStudent.webinarName)
-      .catch(err => console.error("Async Email Error:", err));
 
     res.status(201).json({
       success: true,

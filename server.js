@@ -12,7 +12,6 @@ const adminRoutes = require('./routes/adminRoutes');
 const webinarRoutes = require('./routes/webinarRoutes');
 const courseStudentRoutes = require('./routes/courseStudentRoutes');
 const verifyStudentRoutes = require('./routes/verifyStudentRoutes');
-const { verifyEmailTransport } = require('./services/emailService');
 
 const app = express();
 
@@ -21,7 +20,6 @@ console.log('🚀 Starting Brand Monk Academy Server...');
 console.log('========================================');
 console.log('Port:', process.env.PORT || 5000);
 console.log('MongoDB URI exists:', !!process.env.MONGO_URI);
-console.log('Email configured:', !!process.env.EMAIL_USER);
 
 // CORS Configuration
 const corsOptions = {
@@ -111,8 +109,7 @@ const startServer = async () => {
   try {
     // Attempt to connect to Database
     await connectDB();
-    await verifyEmailTransport();
-    
+
     app.listen(PORT, () => {
       console.log('========================================');
       console.log(`✅ Server running on port ${PORT}`);
