@@ -46,7 +46,23 @@ const MANUAL_CERTIFICATE_REGISTRY = {
   'BMAJUNVEMES/Q1401S027': { name: 'POUL BLESSON . A', courseName: 'Video Editing', courseSlug: 'video-editing' },
   'BMAJUNVEMES/Q1401S028': { name: 'M.Sham Kumar', courseName: 'Video Editing', courseSlug: 'video-editing' },
   'BMAJUNDMMES/Q0506S305': { name: 'Radhamani S', courseName: 'Digital Marketing', courseSlug: 'digital-marketing' },
-  'BMAJUNDMMES/Q0506S306': { name: 'Rekha', courseName: 'Digital Marketing', courseSlug: 'digital-marketing' }
+  'BMAJUNDMMES/Q0506S306': { name: 'Rekha', courseName: 'Digital Marketing', courseSlug: 'digital-marketing' },
+  // Latest batch - Digital Marketing
+  'BMAJUNDMMES/Q0506S307': { name: 'Ammar Ahamad H', courseName: 'Digital Marketing', courseSlug: 'digital-marketing' },
+  'BMAJUNDMMES/Q0506S308': { name: 'Abinaya B', courseName: 'Digital Marketing', courseSlug: 'digital-marketing' },
+  'BMAJUNDMMES/Q0506S309': { name: 'GURU MOORTHY E', courseName: 'Digital Marketing', courseSlug: 'digital-marketing' },
+  'BMAJUNDMMES/Q0506S310': { name: 'Naveen Kumar S V', courseName: 'Digital Marketing', courseSlug: 'digital-marketing' },
+  'BMAJUNDMMES/Q0506S311': { name: 'Sneha S', courseName: 'Digital Marketing', courseSlug: 'digital-marketing' },
+  'BMAJUNDMMES/Q0506S312': { name: 'Devaraj', courseName: 'Digital Marketing', courseSlug: 'digital-marketing' },
+  'BMAJUNDMMES/Q0506S313': { name: 'Akilan', courseName: 'Digital Marketing', courseSlug: 'digital-marketing' },
+  'BMAJUNDMMES/Q0506S314': { name: 'Suriya', courseName: 'Digital Marketing', courseSlug: 'digital-marketing' },
+  'BMAJUNDMMES/Q0506S315': { name: 'Sri Anu Priyanka', courseName: 'Digital Marketing', courseSlug: 'digital-marketing' },
+  'BMAJUNDMMES/Q0506S316': { name: 'F. Aashefa', courseName: 'Digital Marketing', courseSlug: 'digital-marketing' },
+  'BMAJUNDMMES/Q0506S317': { name: 'P.Saravanakumar', courseName: 'Digital Marketing', courseSlug: 'digital-marketing' },
+  // Latest batch - Video Editing
+  'BMAJUNDMMES/Q0506S318': { name: 'Shangavi S M', courseName: 'Video Editing', courseSlug: 'video-editing' },
+  'BMAJUNDMMES/Q0506S319': { name: 'Meghaa S', courseName: 'Video Editing', courseSlug: 'video-editing' },
+  'BMAJUNDMMES/Q0506S320': { name: 'Sabari A', courseName: 'Video Editing', courseSlug: 'video-editing' }
 };
 
 const findCourseStudentForCertificate = async (rawId, decodedId) => {
