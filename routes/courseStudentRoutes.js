@@ -59,6 +59,7 @@ const MANUAL_CERTIFICATE_REGISTRY = {
   'BMAJUNDMMES/Q0506S315': { name: 'Sri Anu Priyanka', courseName: 'Digital Marketing', courseSlug: 'digital-marketing' },
   'BMAJUNDMMES/Q0506S316': { name: 'F. Aashefa', courseName: 'Digital Marketing', courseSlug: 'digital-marketing' },
   'BMAJUNDMMES/Q0506S317': { name: 'P.Saravanakumar', courseName: 'Digital Marketing', courseSlug: 'digital-marketing' },
+  'BMAJUNDMMES/Q0506S321': { name: 'Kishore Marimuthu', courseName: 'Digital Marketing', courseSlug: 'digital-marketing' },
   // Latest batch - Video Editing
   'BMAJUNDMMES/Q0506S318': { name: 'Shangavi S M', courseName: 'Video Editing', courseSlug: 'video-editing' },
   'BMAJUNDMMES/Q0506S319': { name: 'Meghaa S', courseName: 'Video Editing', courseSlug: 'video-editing' },
