@@ -113,6 +113,38 @@ router.delete('/entries/:id', async (req, res) => {
   }
 });
 
+// @desc    Toggle attendance for a verification entry
+// @route   PATCH /api/verify-student/entries/:id/attendance
+// @access  Private (Admin only)
+router.patch('/entries/:id/attendance', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const entry = await StudentVerification.findById(id);
+
+    if (!entry) {
+      return res.status(404).json({
+        success: false,
+        message: 'Verification entry not found'
+      });
+    }
+
+    entry.attended = !entry.attended;
+    await entry.save();
+
+    res.json({
+      success: true,
+      attended: entry.attended,
+      message: entry.attended ? 'Marked as attended' : 'Marked as not attended'
+    });
+  } catch (error) {
+    console.error('ToggleAttendance Error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to update attendance'
+    });
+  }
+});
+
 // @desc    Get all student verification entries
 // @route   GET /api/verify-student/entries
 // @access  Private (Admin only)
@@ -120,7 +152,7 @@ router.get('/entries', async (req, res) => {
   try {
     const entries = await StudentVerification.find({})
       .sort({ createdAt: -1 })
-      .select('name email mobile courseName courseSlug certificateId createdAt');
+      .select('name email mobile courseName courseSlug certificateId attended createdAt');
 
     res.json({
       success: true,

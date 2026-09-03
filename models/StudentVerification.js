@@ -30,6 +30,11 @@ const studentVerificationSchema = mongoose.Schema({
     type: String,
     trim: true,
     default: null
+  },
+  attended: {
+    type: Boolean,
+    default: false,
+    index: true
   }
 }, {
   timestamps: true
