@@ -2,6 +2,15 @@ const express = require('express');
 const router = express.Router();
 const CourseStudent = require('../models/CourseStudent');
 const StudentVerification = require('../models/StudentVerification');
+const { sendGraduationEmail } = require('../services/emailService');
+
+const normalizeName = (value) => value
+  .trim()
+  .toUpperCase()
+  .replace(/\s+/g, ' ')
+  .replace(/[.,]/g, '');
+
+const phonePattern = (digits) => new RegExp(`^${digits.split('').join('\\D*')}$`);
 
 // @desc    Store student form submission
 // @route   POST /api/verify-student
@@ -33,23 +42,42 @@ router.post('/', async (req, res) => {
       });
     }
 
-    // Strict check: student must exist in CourseStudent by mobile number
-    const student = await CourseStudent.findOne({ phoneNumber: cleanMobile });
+    // Match both name and mobile so a phone number assigned to another student
+    // cannot return that student's course details.
+    const students = await CourseStudent.find({
+      phoneNumber: { $regex: phonePattern(cleanMobile) }
+    }).select('name courseName courseSlug certificateId phoneNumber');
 
-    if (!student) {
-      return res.status(404).json({
+    const matchingStudents = students.filter((student) =>
+      normalizeName(student.name) === normalizeName(name)
+    );
+
+    if (matchingStudents.length === 0) {
+      const message = students.length === 0
+        ? 'Mobile number not registered in our database. Please contact admin for assistance.'
+        : 'The name and mobile number do not match our records. Please check your details.';
+
+      return res.status(students.length === 0 ? 404 : 400).json({
         success: false,
-        message: 'Mobile number not registered in our database. Please contact admin for assistance.'
+        message
       });
     }
 
+    if (matchingStudents.length > 1) {
+      return res.status(409).json({
+        success: false,
+        message: 'Multiple student records match these details. Please contact admin for assistance.'
+      });
+    }
+
+    const student = matchingStudents[0];
     const courseName = student.courseName || null;
     const courseSlug = student.courseSlug || null;
     const certificateId = student.certificateId || null;
 
     // Store the submission
     const entry = await StudentVerification.create({
-      name: name.trim(),
+      name: student.name,
       email: (email || '').trim().toLowerCase(),
       mobile: cleanMobile,
       courseName,
@@ -60,16 +88,30 @@ router.post('/', async (req, res) => {
     const recipientEmail = (email || '').trim().toLowerCase();
     console.log('[VerifyStudent] Registration saved:', {
       entryId: entry._id.toString(),
-      name: name.trim(),
+      name: student.name,
       email: recipientEmail || 'missing',
       mobile: cleanMobile,
       courseName: courseName || '24th Graduation Function'
     });
 
+    const frontendUrl = process.env.FRONTEND_URL || 'https://registrations.brandmonkacademy.com';
+    const boardingPassParams = new URLSearchParams({
+      name: student.name,
+      email: (email || '').trim(),
+      mobile: cleanMobile,
+      courseName: courseName || '24th Graduation Function'
+    });
+    const emailStatus = await sendGraduationEmail({
+      to: (email || '').trim().toLowerCase(),
+      studentName: student.name,
+      boardingPassUrl: `${frontendUrl}/verified?${boardingPassParams.toString()}`
+    });
+
     res.json({
       success: true,
+      emailStatus,
       student: {
-        name: name.trim(),
+        name: student.name,
         email: (email || '').trim(),
         mobile: cleanMobile,
         courseName,
