@@ -33,18 +33,19 @@ router.post('/', async (req, res) => {
       });
     }
 
-    // Optionally check if student exists in CourseStudent to grab real course details
+    // Strict check: student must exist in CourseStudent by mobile number
     const student = await CourseStudent.findOne({ phoneNumber: cleanMobile });
 
-    let courseName = null;
-    let courseSlug = null;
-    let certificateId = null;
-
-    if (student) {
-      courseName = student.courseName || null;
-      courseSlug = student.courseSlug || null;
-      certificateId = student.certificateId || null;
+    if (!student) {
+      return res.status(404).json({
+        success: false,
+        message: 'Mobile number not registered in our database. Please contact admin for assistance.'
+      });
     }
+
+    const courseName = student.courseName || null;
+    const courseSlug = student.courseSlug || null;
+    const certificateId = student.certificateId || null;
 
     // Store the submission
     const entry = await StudentVerification.create({
