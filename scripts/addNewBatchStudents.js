@@ -102,7 +102,16 @@ const COURSES = {
       'Mathews',
       'Nirmal S',
       'Magesh K',
-      'Syed Aaqib S N'
+      'Syed Aaqib S N',
+      'Divya V',
+      'Manoj kumar',
+      'Jagadeeshwaran',
+      'Giridharan M',
+      'Hajira Hadi',
+      'Yogitha',
+      'Srimathi M',
+      'Srikanth.S',
+      'S.Ranjitha'
     ]
   },
   'video-editing': {
@@ -172,7 +181,11 @@ const COURSES = {
       'Sitheswar R',
       'George Peter G',
       'Sharuk Basha S',
-      'B.Abinaya'
+      'B.Abinaya',
+      'priyankasri S',
+      'Jayaseelan V',
+      'Abishan',
+      'Arul Periyanayagam'
     ]
   },
   'ui-ux': {
