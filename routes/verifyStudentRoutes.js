@@ -4,12 +4,6 @@ const CourseStudent = require('../models/CourseStudent');
 const StudentVerification = require('../models/StudentVerification');
 const { sendGraduationEmail } = require('../services/emailService');
 
-const normalizeName = (value) => value
-  .trim()
-  .toUpperCase()
-  .replace(/\s+/g, ' ')
-  .replace(/[.,]/g, '');
-
 const phonePattern = (digits) => new RegExp(`^${digits.split('').join('\\D*')}$`);
 
 // @desc    Store student form submission
@@ -17,14 +11,7 @@ const phonePattern = (digits) => new RegExp(`^${digits.split('').join('\\D*')}$`
 // @access  Public
 router.post('/', async (req, res) => {
   try {
-    const { name, email, mobile } = req.body;
-
-    if (!name || !name.trim()) {
-      return res.status(400).json({
-        success: false,
-        message: 'Name is required'
-      });
-    }
+    const { email, mobile } = req.body;
 
     if (!mobile || !mobile.trim()) {
       return res.status(400).json({
@@ -42,35 +29,20 @@ router.post('/', async (req, res) => {
       });
     }
 
-    // Match both name and mobile so a phone number assigned to another student
-    // cannot return that student's course details.
-    const students = await CourseStudent.find({
+    // The registered mobile number is the lookup key. Use the latest matching
+    // record so the boarding pass displays the name stored in the student sheet.
+    const student = await CourseStudent.findOne({
       phoneNumber: { $regex: phonePattern(cleanMobile) }
-    }).select('name courseName courseSlug certificateId phoneNumber');
+    })
+      .sort({ createdAt: -1, _id: -1 })
+      .select('name courseName courseSlug certificateId phoneNumber');
 
-    const matchingStudents = students.filter((student) =>
-      normalizeName(student.name) === normalizeName(name)
-    );
-
-    if (matchingStudents.length === 0) {
-      const message = students.length === 0
-        ? 'Mobile number not registered in our database. Please contact admin for assistance.'
-        : 'The name and mobile number do not match our records. Please check your details.';
-
-      return res.status(students.length === 0 ? 404 : 400).json({
+    if (!student) {
+      return res.status(404).json({
         success: false,
-        message
+        message: 'Mobile number not registered in our database. Please contact admin for assistance.'
       });
     }
-
-    if (matchingStudents.length > 1) {
-      return res.status(409).json({
-        success: false,
-        message: 'Multiple student records match these details. Please contact admin for assistance.'
-      });
-    }
-
-    const student = matchingStudents[0];
     const courseName = student.courseName || null;
     const courseSlug = student.courseSlug || null;
     const certificateId = student.certificateId || null;
